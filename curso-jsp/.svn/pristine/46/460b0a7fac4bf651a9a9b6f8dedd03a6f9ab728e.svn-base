@@ -1,0 +1,155 @@
+package servlet;
+
+import java.io.IOException;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import beans.BeanProdutoCursoJsp;
+import dao.DaoProduto;
+
+@WebServlet("/salvarProduto")
+public class ServletsProduto extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+
+	private DaoProduto daoProduto = new DaoProduto();
+
+	public ServletsProduto() {
+		super();
+	}
+
+	protected void doGet(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+		try {
+			String acao = request.getParameter("acao") != null ? request
+					.getParameter("acao") : "listartodos";
+			String produto = request.getParameter("produto");
+
+			RequestDispatcher view = request
+					.getRequestDispatcher("/cadastroProduto.jsp");
+
+			if (acao.equalsIgnoreCase("delete")) {
+				daoProduto.delete(produto);
+				request.setAttribute("produtos", daoProduto.listar());
+
+			} else if (acao.equalsIgnoreCase("editar")) {
+				BeanProdutoCursoJsp beanProdutoCursoJsp = daoProduto
+						.consultar(produto);
+				request.setAttribute("produto", beanProdutoCursoJsp);
+
+			} else if (acao.equalsIgnoreCase("listartodos")) {
+
+				request.setAttribute("produtos", daoProduto.listar());
+
+			}
+			request.setAttribute("categorias", daoProduto.listarCategorias());
+			view.forward(request, response);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	protected void doPost(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+
+		String acao = request.getParameter("acao");
+
+		if (acao != null && acao.equalsIgnoreCase("reset")) {
+			try {
+				RequestDispatcher view = request
+						.getRequestDispatcher("/cadastroProduto.jsp");
+				request.setAttribute("produtos", daoProduto.listar());
+				view.forward(request, response);
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		} else {
+
+			String id = request.getParameter("id");
+			String nome = request.getParameter("nome");
+			String quantidade = request.getParameter("quantidade");
+			String valor = request.getParameter("valor");
+			String categoria = request.getParameter("categoria_id");
+
+			try {
+
+				String msg = null;
+				boolean podeInserir = true;
+
+				if (valor == null || valor.isEmpty()) {
+					msg = "Valor correto R$ deve ser informado";
+					podeInserir = false;
+
+				} else if (quantidade == null || quantidade.isEmpty()) {
+					msg = "Quantidade correta deve ser informado";
+					podeInserir = false;
+
+				} else if (nome == null || nome.isEmpty()) {
+					msg = "Nome deve ser informado";
+					podeInserir = false;
+
+				} else if (id == null || id.isEmpty()
+						&& !daoProduto.validarNome(nome)) {// QUANDO FOR PRODUTO
+															// NOVO
+					msg = "Produto já existe com o mesmo nome!";
+					podeInserir = false;
+
+				}
+
+				BeanProdutoCursoJsp produto = new BeanProdutoCursoJsp();
+				produto.setNome(nome);
+				produto.setId(!id.isEmpty() ? Long.parseLong(id) : null);
+				produto.setCategoria_id(Long.parseLong(categoria));
+				
+				if (quantidade != null && !quantidade.isEmpty()) {
+					int q = Integer.parseInt(quantidade);
+					produto.setQuantidade(Integer.parseInt(quantidade));
+					if (q <= 0) {
+						podeInserir = false;
+						msg = "Quantidade correta deve ser informada";
+					}
+				}
+
+				if (valor != null && !valor.isEmpty()) {
+					String valorParse = valor.replaceAll("\\.", "");
+					valorParse = valorParse.replaceAll("\\,", ".");
+					produto.setValor(Double.parseDouble(valorParse));
+				}
+
+				if (msg != null) {
+					request.setAttribute("msg", msg);
+				} else if (id == null || id.isEmpty()
+						&& daoProduto.validarNome(nome) && podeInserir) {
+					
+					daoProduto.salvar(produto);
+					
+					msg = "Produto salvo com sucesso";
+					request.setAttribute("msg", msg);
+				} else if (id != null && !id.isEmpty() && podeInserir) {
+					daoProduto.atualizar(produto);
+				}
+
+				if (!podeInserir) {
+					request.setAttribute("produto", produto);
+				}
+
+				RequestDispatcher view = request
+						.getRequestDispatcher("/cadastroProduto.jsp");
+				request.setAttribute("produtos", daoProduto.listar());
+				request.setAttribute("categorias",
+						daoProduto.listarCategorias());
+				view.forward(request, response);
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+}
