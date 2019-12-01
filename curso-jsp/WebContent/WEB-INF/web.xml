@@ -6,7 +6,7 @@
   </welcome-file-list>
   <context-param>
     <param-name>estado</param-name>
-    <param-value>paraná</param-value>
+    <param-value>rio_grande_do_sul</param-value>
   </context-param>
   <filter>
     <filter-name>filter</filter-name>
