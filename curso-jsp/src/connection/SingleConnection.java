@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 
 /**
- * Responsável por fazer a conexão com o banco de dados
+ * ResponsÃ¡vel por fazer a conexÃ£o com o banco de dados
  * @author alex
  *
  */
@@ -14,8 +14,8 @@ public class SingleConnection {
 	private static String password = "admin";//senha da hospedagem
 	private static String user = "admin";
 	private static Connection connection = null;
-	//banco: devlabs1_projetojspeservlet e devlabs1_projetojsf1 / user:devlabs1 / senha: wKrgeE1_  
-	//projeto no computador local => user: postgres / senha: admin / projeto: curso-jsp e meuprimeiroprojetojsf
+	//banco: devlabs1_projetojspeservlet e devlabs1_projetojsf1 / user: / senha:  
+	//projeto no computador local => user: postgres / senha: admin / projeto: curso-jsp
 	static {
 		conectar();
 	}
